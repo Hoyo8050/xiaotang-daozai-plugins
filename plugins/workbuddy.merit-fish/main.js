@@ -121,15 +121,18 @@ function fishNode(down) {
     };
 }
 
-// 连击档位光环：一档淡金单环，二档双层亮金——不写文字，靠光的强弱表达倍率
+// 连击档位光环：一档淡金单环，二档双层亮金——不写文字，靠光的强弱表达倍率。
+// 关键：光环必须跟数字用同一个「连击间隔」淡出绑定，否则停手后数字褪回白、光环却要等
+// 下一次定时刷新（≥60s）才消失。opacity 走 bind 后，宿主逐帧重绘，到点自动熄灭。
 function haloNode(tier) {
+    const fade = { opacity: { bind: "tint", map: [1, 0] } };
     if (tier >= 2) {
         return [
-            { path: ellipse(96, 128, 77, 52), stroke: "#FFD25A8C", width: 2.4, glow: true },
-            { path: ellipse(96, 128, 84, 55), stroke: "#FFD25A42", width: 1.4, glow: true }
+            { path: ellipse(96, 128, 77, 52), stroke: "#FFD25A8C", width: 2.4, glow: true, ...fade },
+            { path: ellipse(96, 128, 84, 55), stroke: "#FFD25A42", width: 1.4, glow: true, ...fade }
         ];
     }
-    return [{ path: ellipse(96, 128, 74, 50), stroke: "#FFD25A66", width: 2, glow: true }];
+    return [{ path: ellipse(96, 128, 74, 50), stroke: "#FFD25A66", width: 2, glow: true, ...fade }];
 }
 
 // 槌子：原点在槌头圆心，木柄朝右上；落下时压腕，抬起时抬腕
@@ -204,8 +207,9 @@ function computeState(input) {
         tickMs = nowMs;   // 从此刻重新计空档，否则重置完会立刻把刚才那段算成超时
     }
 
-    // 2) 把「自上次结算以来、落在生效时段内」的时长累到空档计时里
-    if (tickMs > 0 && nowMs > tickMs) {
+    // 2) 把「自上次结算以来、落在生效时段内」的时长累到空档计时里。
+    //    「停手」指敲过以后再停：从未敲过（lastMs=0）不累计，避免刚启用就凭空扣分。
+    if (lastMs > 0 && tickMs > 0 && nowMs > tickMs) {
         away += inWindowSeconds(tickMs, nowMs, winStart, winEnd, offsetSec);
     }
     tickMs = nowMs;

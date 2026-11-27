@@ -25,7 +25,7 @@
     { "key": "active_end", "label": "扣功德生效时段·结束", "type": "time", "default": "19:00" }
   ],
   "statusLayout": {
-    "components": [{ "type": "canvas" }],
+    "components": [{ "type": "canvas" }, { "type": "actions" }],
     "style": { "accent": "#FFD25A", "density": "compact", "surface": "plain", "emphasis": "normal" }
   },
   "navigationIcon": {
